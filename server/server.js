@@ -7,33 +7,86 @@ const Socketio = require('socket.io')(Http, {
   }
 })
 
-
-var position = {
-  x: 200,
-  y: 200,
-}
+//no need for db btw, not for actuall game
+//this object can be expanded to have multiple gameboards with sharable keys to join each others games
+//
+// var position = {
+//   x: 200,
+//   y: 200,
+// }
+let board = [
+  "BR",
+  "BN",
+  "BB",
+  "BQ",
+  "BK",
+  "BB",
+  "BN",
+  "BR",
+  "BP",
+  "BP",
+  "BP",
+  "BP",
+  "BP",
+  "BP",
+  "BP",
+  "BP",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "WP",
+  "WP",
+  "WP",
+  "WP",
+  "WP",
+  "WP",
+  "WP",
+  "WP",
+  "WR",
+  "WN",
+  "WB",
+  "WQ",
+  "WK",
+  "WB",
+  "WN",
+  "WR",
+]
 
 Socketio.on("connection", socket => {
-  socket.emit("position", position)
-  socket.on("move", data => {
-    switch (data) {
-      case "left":
-        position.x -= 20
-        Socketio.emit("position", position)
-        break
-      case "right":
-        position.x += 20
-        Socketio.emit("position", position)
-        break
-      case "up":
-        position.y -= 20
-        Socketio.emit("position", position)
-        break
-      case "down":
-        position.y += 20
-        Socketio.emit("position", position)
-        break
-    }
+  socket.emit("board", board)
+  socket.on("move", move => {
+    board[move[1]] = board[move[0]] //second square gets the piece that occupies the first square
+    board[move[0]] = "" //clar second square
+    Socketio.emit("board", board)
   })
 })
 
