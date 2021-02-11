@@ -104,6 +104,7 @@ export default {
         "WN",
         "WR",
       ],
+      room: String,
       activePiecePos: Number,
       position: {
         x: 0,
@@ -112,8 +113,31 @@ export default {
     };
   },
   created() {
-    // this.socket = io("http://localhost:3000", { transport: ["websocket"] });
-    this.socket = io("http://localhost:3000", { transport: ["websocket"] });
+    console.log("I am created");
+    this.socket = io("http://localhost:3000/game", { transport: ["websocket"] });
+
+    //check if gameRoom already in url
+    console.log(this.$route.query.id);
+    if (this.$route.query.id) {
+      this.socket.emit("joinRoom", this.$route.query.id);
+    } else {
+      //create room and join
+      this.socket.emit("joinRoom", "create");
+    }
+
+    // this.socket.on("message", function (data) {
+    //   console.log(data);
+    // });
+
+    // socket.emit("subscribe", "roomOne");
+    // socket.emit("subscribe", "roomTwo");
+
+    // $("#send").click(function () {
+    //   var room = $("#room").val(),
+    //     message = $("#message").val();
+
+    //   socket.emit("send", { room: room, message: message });
+    // });
   },
   mounted() {
     // this.context = this.$refs.game.getContext("2d");
@@ -122,8 +146,24 @@ export default {
     //   this.context.clearRect(0, 0, this.$refs.game.width, this.$refs.game.height);
     //   this.context.fillRect(this.position.x, this.position.y, 20, 20);
     // });
+    this.socket.on("status", (data) => {
+      this.room = data[1]; // add data to url and make url sharable
+      console.log("joined room: " + this.room);
+      if (!this.$route.query.id) {
+        this.$router.push({ query: { id: this.room } });
+      }
+    });
+
     this.socket.on("board", (data) => {
       this.board = data;
+      console.log(data);
+    });
+
+    this.socket.on("err", (err) => {
+      console.log(err);
+    });
+    this.socket.on("success", (res) => {
+      console.log(res);
     });
   },
   methods: {
@@ -142,7 +182,8 @@ export default {
         this.activePiecePos = index;
       } else {
         console.log(this.activePiecePos, index);
-        this.socket.emit("move", [this.activePiecePos, index]);
+        this.socket.emit("move", [this.room, [this.activePiecePos, index]]);
+        // this.socket.emit("move", [this.activePiecePos, index]);
       }
     },
   },
