@@ -27,11 +27,12 @@ const io = require('socket.io')(http, {
 // }
 const board = ["BR", "BN", "BB", "BQ", "BK", "BB", "BN", "BR", "BP", "BP", "BP", "BP", "BP", "BP", "BP", "BP", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "WP", "WP", "WP", "WP", "WP", "WP", "WP", "WP", "WR", "WN", "WB", "WQ", "WK", "WB", "WN", "WR",]
 let rooms = {}
-let roomsSecrets = []
+
 
 
 
 io.of("/game").on("connection", socket => {
+
 
 
   socket.on("joinRoom", (room) => {
@@ -40,6 +41,7 @@ io.of("/game").on("connection", socket => {
       socket.join(room)
       // rooms.push({ room: board })
       rooms[room] = { board: board.slice() }
+      rooms[room].p1 = socket.id
 
 
 
@@ -49,6 +51,10 @@ io.of("/game").on("connection", socket => {
     }
     else if (1) { //games.includes(room)
       socket.join(room)
+
+      if (!rooms[room].p2) { //if p2 doesn't already exist
+        rooms[room].p2 = socket.id
+      }
       io.of("/game").in(room).emit("board", rooms[room].board)
       return io.of("/game").in(room).emit("status", ["someone joined", room])
     }
@@ -61,14 +67,38 @@ io.of("/game").on("connection", socket => {
   socket.on("move", data => {
     room = data[0] //CHECK IF ROOM EXISTS, ELSE CRASH!!!!!!!
     move = data[1]
+    // player = socket.id == rooms[room].p1 ? "p1" : "p2"
+    if (socket.id == rooms[room].p1) {
+      console.log("player one")
+    }
+    else if (socket.id == rooms[room].p2) {
+      console.log("player two")
+    }
+    else {
+      return console.log("UNATHOURIZED TRIED TO MOVE")
+    }
 
-    console.log(rooms)
+    // switch (socket.id) {
+    //   case rooms[room].p1:
+    //     console.log("player one")
+    //     break
+    //   case rooms[room].p2:
+    //     console.log("player two")
+    //     break
+
+    //   default:
+
+    //     break
+    // }
+
+    //console.log(player)
+
 
 
     rooms[room].board[move[1]] = rooms[room].board[move[0]] //second square gets the piece that occupies the first square
     rooms[room].board[move[0]] = "" //clar second square
     io.of("/game").in(room).emit("board", rooms[room].board)
-    console.log(rooms)
+
 
 
   })
