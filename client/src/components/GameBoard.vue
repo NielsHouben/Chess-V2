@@ -9,6 +9,7 @@
     </p>
   </div> -->
   <div id="board">
+    <h1 style="text-align: left" v-if="this.iAm">{{ this.iAm }}</h1>
     <div class="gameBoard">
       <div
         v-for="(piece, index) in this.board"
@@ -39,22 +40,6 @@ export default {
     return {
       socket: {},
       board: [
-        "BR",
-        "BN",
-        "BB",
-        "BQ",
-        "BK",
-        "BB",
-        "BN",
-        "BR",
-        "BP",
-        "BP",
-        "BP",
-        "BP",
-        "BP",
-        "BP",
-        "BP",
-        "BP",
         "",
         "",
         "",
@@ -87,29 +72,42 @@ export default {
         "",
         "",
         "",
-        "WP",
-        "WP",
-        "WP",
-        "WP",
-        "WP",
-        "WP",
-        "WP",
-        "WP",
-        "WR",
-        "WN",
-        "WB",
-        "WQ",
-        "WK",
-        "WB",
-        "WN",
-        "WR",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
       ],
       room: String,
       activePiecePos: Number,
-      position: {
-        x: 0,
-        y: 0,
-      },
+      iAm: false,
     };
   },
   created() {
@@ -117,60 +115,39 @@ export default {
     this.socket = io("http://localhost:3000/game", { transport: ["websocket"] });
 
     //check if gameRoom already in url
-    console.log(this.$route.query.id);
     if (this.$route.query.id) {
       this.socket.emit("joinRoom", this.$route.query.id);
     } else {
       //create room and join
       this.socket.emit("joinRoom", "create");
     }
-
-    // this.socket.on("message", function (data) {
-    //   console.log(data);
-    // });
-
-    // socket.emit("subscribe", "roomOne");
-    // socket.emit("subscribe", "roomTwo");
-
-    // $("#send").click(function () {
-    //   var room = $("#room").val(),
-    //     message = $("#message").val();
-
-    //   socket.emit("send", { room: room, message: message });
-    // });
   },
   mounted() {
-    // this.context = this.$refs.game.getContext("2d");
-    // this.socket.on("position", (data) => {
-    //   this.position = data;
-    //   this.context.clearRect(0, 0, this.$refs.game.width, this.$refs.game.height);
-    //   this.context.fillRect(this.position.x, this.position.y, 20, 20);
-    // });
     this.socket.on("status", (data) => {
       this.room = data[1]; // add data to url and make url sharable
-      console.log("joined room: " + this.room);
+      if (!this.iAm) {
+        this.iAm = data[0];
+        console.log(`I am ${this.iAm}`);
+      }
       if (!this.$route.query.id) {
         this.$router.push({ query: { id: this.room } });
       }
     });
 
     this.socket.on("board", (data) => {
-      this.board = data;
-      console.log(data);
+      //if p2, it should reverse the list
+      if (this.iAm == "p2") {
+        this.board = data.reverse();
+      } else {
+        this.board = data;
+      }
     });
 
     this.socket.on("err", (err) => {
       console.log(err);
     });
-    this.socket.on("success", (res) => {
-      console.log(res);
-    });
   },
   methods: {
-    // move(direction) {
-    //   // this.socket.emit("move", direction);
-    //   this.socket.emit("move", direction);
-    // },
     colorDecider(index) {
       return Math.floor(index / 8) % 2 == 0 ? index % 2 == 0 : index % 2 != 0;
     },
@@ -183,7 +160,6 @@ export default {
       } else {
         console.log(this.activePiecePos, index);
         this.socket.emit("move", [this.room, [this.activePiecePos, index]]);
-        // this.socket.emit("move", [this.activePiecePos, index]);
       }
     },
   },
