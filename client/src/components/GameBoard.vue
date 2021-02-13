@@ -159,7 +159,11 @@ export default {
         this.activePiecePos = index;
       } else {
         console.log(this.activePiecePos, index);
-        this.socket.emit("move", [this.room, [this.activePiecePos, index]]);
+        if (this.iAm == "p2") {
+          this.socket.emit("move", [this.room, [63 - this.activePiecePos, 63 - index]]);
+        } else {
+          this.socket.emit("move", [this.room, [this.activePiecePos, index]]);
+        }
       }
     },
   },

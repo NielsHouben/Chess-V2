@@ -71,13 +71,13 @@ io.of("/game").on("connection", socket => {
     move = data[1]
     // player = socket.id == rooms[room].p1 ? "p1" : "p2"
     if (socket.id == rooms[room].p1) {
-      if (!rooms[room].turn) return console.log("not your turn") // if true, p1 can play
+      if (!rooms[room].turn) return console.log("p1 unathorized") // if true, p1 can play
 
 
       console.log("player one")
     }
     else if (socket.id == rooms[room].p2) {
-      if (rooms[room].turn) return console.log("not your turn") //if !true, p2 can play
+      if (rooms[room].turn) return console.log("p2 unathorized") //if !true, p2 can play
 
       console.log("player two")
     }
